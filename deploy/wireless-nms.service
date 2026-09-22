@@ -1,0 +1,22 @@
+[Unit]
+Description=Wireless NMS Platform - 全自研无线网管平台
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/opt/wireless-nms
+ExecStart=/opt/wireless-nms/venv/bin/gunicorn \
+    --workers 2 \
+    --bind 127.0.0.1:5577 \
+    --timeout 600 \
+    --access-logfile /opt/wireless-nms/data/access.log \
+    --error-logfile /opt/wireless-nms/data/error.log \
+    app:app
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=wireless-nms
+
+[Install]
+WantedBy=multi-user.target

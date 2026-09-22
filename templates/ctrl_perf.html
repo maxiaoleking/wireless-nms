@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>无线网管平台 - MM/MD 硬件性能</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260720">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <style>
+        /* 覆写全局 overflow:hidden, 允许小窗口滚动 */
+        body { overflow: auto !important; height: auto !important; min-height: 100vh; }
+
+        .perf-layout {
+            padding: 20px 24px;
+            margin-top: var(--topbar-height);
+            min-height: calc(100vh - var(--topbar-height));
+            box-sizing: border-box;
+        }
+        .perf-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .perf-header h2 { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+        .perf-header .meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+        .refresh-btn {
+            padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-color);
+            background: var(--bg-card); color: var(--text-primary); font-size: 13px; cursor: pointer;
+        }
+        .refresh-btn:hover { background: var(--bg-card-hover); }
+
+        /* 卡片网格 */
+        .ctrl-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .ctrl-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 18px 20px;
+            overflow: hidden;
+        }
+        .ctrl-card.mm { border-left: 4px solid #22c55e; }
+        .ctrl-card.md { border-left: 4px solid #6366f1; }
+
+        .ctrl-head {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .ctrl-name { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+        .ctrl-ip { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+        .ctrl-tags { display: flex; gap: 6px; }
+        .tag {
+            font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 600;
+        }
+        .tag-model { background: rgba(99,102,241,0.1); color: #6366f1; }
+        .tag-mm { background: rgba(34,197,94,0.12); color: #16a34a; }
+        .tag-md { background: rgba(99,102,241,0.12); color: #6366f1; }
+
+        /* 指标行 */
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .metric-box {
+            background: rgba(255,255,255,0.3);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+        .metric-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .metric-val { font-size: 22px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
+        .metric-val .u { font-size: 11px; font-weight: 400; color: var(--text-muted); }
+        .metric-bar { height: 4px; background: rgba(0,0,0,0.06); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+        .metric-bar-fill { height: 100%; border-radius: 2px; transition: width 0.5s; }
+        .bar-green { background: #22c55e; }
+        .bar-yellow { background: #f59e0b; }
+        .bar-red { background: #ef4444; }
+
+        .info-row {
+            display: flex; gap: 16px; font-size: 11px; color: var(--text-muted);
+            padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* CPU 核心列表 */
+        .cores-section { margin-top: 12px; }
+        .cores-toggle {
+            font-size: 11px; color: #6366f1; cursor: pointer; user-select: none;
+            display: flex; align-items: center; gap: 4px;
+        }
+        .cores-toggle:hover { text-decoration: underline; }
+        .cores-list {
+            display: none;
+            margin-top: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .cores-list.open { display: block; }
+        .core-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 3px 0; font-size: 11px;
+        }
+        .core-name { width: 140px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .core-bar-wrap { flex: 1; height: 6px; background: rgba(0,0,0,0.06); border-radius: 3px; overflow: hidden; }
+        .core-bar { height: 100%; border-radius: 3px; transition: width 0.5s; }
+        .core-val { width: 32px; text-align: right; color: var(--text-muted); font-size: 10px; }
+
+        /* 趋势图区域 */
+        .trends-section { margin-bottom: 24px; }
+        .trends-section h3 { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px; }
+        .trends-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 16px;
+        }
+        .trend-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px;
+        }
+        .trend-card h4 { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+        .trend-card canvas { width: 100% !important; height: 180px !important; }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+    <header class="top-bar">
+        <div class="top-bar-left">
+            <h1 class="logo"><span class="logo-icon">&#9678;</span>无线网管平台</h1>
+        </div>
+        <div class="top-bar-center">
+            <div class="stats-bar">
+                <div class="stat-item"><span class="stat-label">控制器</span><span class="stat-value" id="s-ctrl">0</span></div>
+                <div class="stat-item"><span class="stat-label">平均CPU</span><span class="stat-value" id="s-cpu">--</span></div>
+                <div class="stat-item"><span class="stat-label">平均内存</span><span class="stat-value" id="s-mem">--</span></div>
+            </div>
+        </div>
+        <div class="top-bar-right">
+            <div class="nav-links">
+                <a href="/" class="nav-link">入口</a>
+                <a href="/dashboard" class="nav-link">总览</a>
+                <a href="/ap-status" class="nav-link">AP 状态</a>
+                <a href="/campus-ap" class="nav-link">室外点位</a>
+                <a href="/ctrl-perf" class="nav-link active">控制器</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="perf-layout">
+        <div class="perf-header">
+            <div>
+                <h2>MM / MD 硬件性能监控</h2>
+                <div class="meta" id="perf-meta">加载中...</div>
+            </div>
+            <button class="refresh-btn" id="btn-refresh" onclick="loadAll()">&#x21bb; 刷新</button>
+        </div>
+        <div class="ctrl-grid" id="ctrl-grid">
+            <div class="empty-state"><p>正在加载...</p></div>
+        </div>
+
+        <div class="trends-section">
+            <h3>&#x1F4C8; 性能趋势 (最近 24 小时)</h3>
+            <div class="trends-grid" id="trends-grid"></div>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        const COLORS = ['#6366f1','#22c55e','#f59e0b','#ef4444','#06b6d4','#ec4899'];
+
+        function esc(s) { if(!s) return ''; const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+        function barCls(p) { return p>=80?'bar-red':p>=60?'bar-yellow':'bar-green'; }
+        function fmtUp(t) {
+            const s=Math.floor(t/100), d=Math.floor(s/86400), h=Math.floor(s%86400/3600), m=Math.floor(s%3600/60);
+            return d+'天 '+h+'时 '+m+'分';
+        }
+        function roleLbl(r) { return (r==='master'||r==='1')?'MM 主控':'MD 节点'; }
+
+        function renderCard(c) {
+            const isMM = c.role==='master'||c.role==='1';
+            const cpu=c.cpu_pct||0, mem=c.mem_pct||0;
+            const temp=parseFloat(c.temperature)||0;
+            const cores = typeof c.cpu_cores==='string' ? JSON.parse(c.cpu_cores||'[]') : (c.cpu_cores||[]);
+
+            let coresHtml = '';
+            if (cores.length > 1) {
+                const items = cores.map(co => `
+                    <div class="core-item">
+                        <span class="core-name" title="${esc(co.name)}">${esc(co.name)}</span>
+                        <div class="core-bar-wrap"><div class="core-bar ${barCls(co.load)}" style="width:${co.load}%"></div></div>
+                        <span class="core-val">${co.load}%</span>
+                    </div>`).join('');
+                coresHtml = `
+                    <div class="cores-section">
+                        <div class="cores-toggle" onclick="this.nextElementSibling.classList.toggle('open')">
+                            &#x25B6; CPU 核心详情 (${cores.length} 核)
+                        </div>
+                        <div class="cores-list">${items}</div>
+                    </div>`;
+            }
+
+            return `
+            <div class="ctrl-card ${isMM?'mm':'md'}">
+                <div class="ctrl-head">
+                    <div>
+                        <div class="ctrl-name">${esc(c.hostname||c.ip)}</div>
+                        <div class="ctrl-ip">${esc(c.ip)}</div>
+                    </div>
+                    <div class="ctrl-tags">
+                        <span class="tag tag-model">${esc(c.model||'--')}</span>
+                        <span class="tag ${isMM?'tag-mm':'tag-md'}">${roleLbl(c.role)}</span>
+                    </div>
+                </div>
+                <div class="metrics-row">
+                    <div class="metric-box">
+                        <div class="metric-label">CPU</div>
+                        <div class="metric-val">${cpu}<span class="u">%</span></div>
+                        <div class="metric-bar"><div class="metric-bar-fill ${barCls(cpu)}" style="width:${cpu}%"></div></div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">内存</div>
+                        <div class="metric-val">${mem}<span class="u">%</span></div>
+                        <div class="metric-bar"><div class="metric-bar-fill ${barCls(mem)}" style="width:${mem}%"></div></div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">温度</div>
+                        <div class="metric-val">${temp>0?temp:'--'}<span class="u">${temp>0?'°C':''}</span></div>
+                    </div>
+                </div>
+                ${coresHtml}
+                <div class="info-row">
+                    <span>丢包: ${c.pkt_loss||0}%</span>
+                    <span>运行: ${c.sys_uptime?fmtUp(c.sys_uptime):'--'}</span>
+                    <span>更新: ${c.updated_at||'--'}</span>
+                </div>
+            </div>`;
+        }
+
+        let charts = {};
+        function destroyCharts() { Object.values(charts).forEach(c => c.destroy()); charts = {}; }
+
+        async function renderTrends(ctrls) {
+            const container = document.getElementById('trends-grid');
+            container.innerHTML = '';
+            destroyCharts();
+
+            // CPU 趋势
+            const cpuCard = document.createElement('div');
+            cpuCard.className = 'trend-card';
+            cpuCard.innerHTML = '<h4>CPU 利用率趋势</h4><canvas id="chart-cpu"></canvas>';
+            container.appendChild(cpuCard);
+
+            // 内存趋势
+            const memCard = document.createElement('div');
+            memCard.className = 'trend-card';
+            memCard.innerHTML = '<h4>内存利用率趋势</h4><canvas id="chart-mem"></canvas>';
+            container.appendChild(memCard);
+
+            // 加载每个控制器的历史
+            const allHistory = {};
+            for (const c of ctrls) {
+                try {
+                    const r = await fetch(`/api/ctrl-history/${c.ip}?hours=24`);
+                    const d = await r.json();
+                    allHistory[c.ip] = d.history || [];
+                } catch { allHistory[c.ip] = []; }
+            }
+
+            const chartOpts = {
+                responsive: true, maintainAspectRatio: false,
+                scales: {
+                    x: { display: true, ticks: { font: { size: 9 }, maxTicksLimit: 8 } },
+                    y: { min: 0, max: 100, ticks: { font: { size: 10 }, callback: v => v+'%' } }
+                },
+                plugins: { legend: { labels: { font: { size: 10 }, boxWidth: 12 } } },
+                elements: { point: { radius: 1 }, line: { tension: 0.3, borderWidth: 2 } },
+                interaction: { intersect: false, mode: 'index' },
+            };
+
+            function buildDatasets(historyMap, field) {
+                const datasets = [];
+                let i = 0;
+                for (const [ip, hist] of Object.entries(historyMap)) {
+                    if (hist.length < 2) continue;
+                    const ctrl = ctrls.find(c => c.ip === ip);
+                    datasets.push({
+                        label: ctrl ? (ctrl.hostname || ip) : ip,
+                        data: hist.map(h => ({ x: h.recorded_at, y: h[field] || 0 })),
+                        borderColor: COLORS[i % COLORS.length],
+                        backgroundColor: COLORS[i % COLORS.length] + '20',
+                        fill: false,
+                    });
+                    i++;
+                }
+                return datasets;
+            }
+
+            // CPU chart
+            const cpuCtx = document.getElementById('chart-cpu');
+            if (cpuCtx) {
+                charts.cpu = new Chart(cpuCtx, {
+                    type: 'line',
+                    data: { datasets: buildDatasets(allHistory, 'cpu_pct') },
+                    options: chartOpts,
+                });
+            }
+
+            // MEM chart
+            const memCtx = document.getElementById('chart-mem');
+            if (memCtx) {
+                charts.mem = new Chart(memCtx, {
+                    type: 'line',
+                    data: { datasets: buildDatasets(allHistory, 'mem_pct') },
+                    options: chartOpts,
+                });
+            }
+        }
+
+        async function loadAll() {
+            const btn = document.getElementById('btn-refresh');
+            btn.disabled = true; btn.textContent = '⏳ 加载中...';
+            try {
+                const resp = await fetch('/api/ctrl-metrics');
+                const data = await resp.json();
+                const ctrls = data.controllers || [];
+
+                document.getElementById('s-ctrl').textContent = ctrls.length;
+                if (ctrls.length) {
+                    const avgC = (ctrls.reduce((s,c)=>s+(c.cpu_pct||0),0)/ctrls.length).toFixed(1);
+                    const avgM = (ctrls.reduce((s,c)=>s+(c.mem_pct||0),0)/ctrls.length).toFixed(1);
+                    document.getElementById('s-cpu').textContent = avgC+'%';
+                    document.getElementById('s-mem').textContent = avgM+'%';
+                    document.getElementById('perf-meta').textContent =
+                        `共 ${ctrls.length} 台控制器 | 最后更新: ${ctrls[0].updated_at||''}`;
+                }
+
+                document.getElementById('ctrl-grid').innerHTML = ctrls.length
+                    ? ctrls.map(renderCard).join('')
+                    : '<div class="empty-state"><p>暂无数据，等待首次采集...</p></div>';
+
+                await renderTrends(ctrls);
+            } catch (err) {
+                document.getElementById('ctrl-grid').innerHTML =
+                    `<div class="empty-state"><p>加载失败: ${err.message}</p></div>`;
+            } finally {
+                btn.disabled = false; btn.innerHTML = '&#x21bb; 刷新';
+            }
+        }
+
+        loadAll();
+        setInterval(loadAll, 30000);
+    })();
+    </script>
+</body>
+</html>

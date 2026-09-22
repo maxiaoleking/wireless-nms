@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>无线网管平台 - 入口</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260720">
+    <style>
+        .portal-body {
+            overflow-y: auto;
+        }
+        .portal-hero {
+            text-align: center;
+            padding: 60px 20px 30px;
+        }
+        .portal-hero h2 {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 12px rgba(255,255,255,0.4);
+        }
+        .portal-hero p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            text-shadow: 0 1px 8px rgba(255,255,255,0.3);
+        }
+        .portal-hero .hero-stats {
+            display: flex;
+            gap: 32px;
+            justify-content: center;
+            margin-top: 24px;
+        }
+        .hero-stat {
+            text-align: center;
+        }
+        .hero-stat .num {
+            font-size: 28px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: var(--text-primary);
+        }
+        .hero-stat .num.green { color: var(--color-online); }
+        .hero-stat .num.red { color: var(--color-offline); }
+        .hero-stat .label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .portal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px 24px 60px;
+        }
+
+        .portal-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(var(--blur));
+            -webkit-backdrop-filter: blur(var(--blur));
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 28px 24px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        .portal-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--card-accent, #A825E3);
+            opacity: 0.8;
+            transition: height 0.3s;
+        }
+        .portal-card:hover {
+            background: var(--bg-card-hover);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+        }
+        .portal-card:hover::before {
+            height: 5px;
+        }
+
+        .portal-card .card-icon {
+            font-size: 36px;
+            margin-bottom: 16px;
+            line-height: 1;
+        }
+        .portal-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        .portal-card .card-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            flex-grow: 1;
+        }
+        .portal-card .card-meta {
+            display: flex;
+            gap: 16px;
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border-subtle);
+        }
+        .portal-card .card-meta-item {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .portal-card .card-meta-item b {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: block;
+        }
+        .portal-card .card-meta-item b.green { color: var(--color-online); }
+        .portal-card .card-meta-item b.red { color: var(--color-offline); }
+        .portal-card .card-arrow {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 20px;
+            color: var(--text-muted);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+        .portal-card:hover .card-arrow {
+            opacity: 1;
+            transform: translateX(4px);
+            color: var(--text-primary);
+        }
+
+        /* 导航栏统一样式 */
+        .nav-links {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .nav-link {
+            padding: 6px 14px;
+            border-radius: 6px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .nav-link:hover {
+            background: rgba(255,255,255,0.5);
+        }
+        .nav-link.active {
+            background: rgba(24,25,26,0.85);
+            color: #fff;
+        }
+
+        .portal-footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body class="portal-body">
+    <header class="top-bar">
+        <div class="top-bar-left">
+            <h1 class="logo">
+                <span class="logo-icon">&#9678;</span>
+                无线网管平台
+            </h1>
+        </div>
+        <div class="top-bar-right">
+            <div class="nav-links">
+                <a href="/" class="nav-link active">入口</a>
+                <a href="/dashboard" class="nav-link">总览</a>
+                <a href="/ap-status" class="nav-link">AP 状态</a>
+                <a href="/campus-ap" class="nav-link">室外点位</a>
+                <a href="/ctrl-perf" class="nav-link">控制器</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container" style="overflow-y:auto">
+        <div class="portal-hero">
+            <h2>无线网管平台</h2>
+            <p>XATU 无线网络统一监控管理 · Aruba + H3C 双厂商</p>
+            <div class="hero-stats" id="hero-stats">
+                <div class="hero-stat">
+                    <div class="num" id="h-total">--</div>
+                    <div class="label">AP 总数</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="num green" id="h-online">--</div>
+                    <div class="label">在线</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="num red" id="h-offline">--</div>
+                    <div class="label">离线</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="num" id="h-ctrl">--</div>
+                    <div class="label">控制器</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="portal-grid">
+            <a href="/dashboard" class="portal-card" style="--card-accent: #A825E3">
+                <div class="card-icon">&#128202;</div>
+                <h3>总览仪表盘</h3>
+                <div class="card-desc">全网 AP 统计概览、各区域在线率、离线 AP 列表一览。</div>
+                <div class="card-meta">
+                    <div class="card-meta-item">在线率<b class="green" id="m-rate">--</b></div>
+                    <div class="card-meta-item">离线<b class="red" id="m-offline">--</b></div>
+                </div>
+                <div class="card-arrow">&rarr;</div>
+            </a>
+
+            <a href="/ap-status" class="portal-card" style="--card-accent: #E62A6B">
+                <div class="card-icon">&#128246;</div>
+                <h3>AP 状态监控</h3>
+                <div class="card-desc">按区域查看 AP 实时状态、客户端数、吞吐量，支持地图定位。</div>
+                <div class="card-meta">
+                    <div class="card-meta-item">区域<b id="m-regions">--</b></div>
+                    <div class="card-meta-item">AP<b id="m-total">--</b></div>
+                </div>
+                <div class="card-arrow">&rarr;</div>
+            </a>
+
+            <a href="/campus-ap" class="portal-card" style="--card-accent: #FF7637">
+                <div class="card-icon">&#127759;</div>
+                <h3>室外 AP 点位</h3>
+                <div class="card-desc">校园室外 AP 地图分布、拖放定位、楼层平面图管理。</div>
+                <div class="card-meta">
+                    <div class="card-meta-item">H3C AP<b id="m-h3c">--</b></div>
+                    <div class="card-meta-item">Aruba AP<b id="m-aruba">--</b></div>
+                </div>
+                <div class="card-arrow">&rarr;</div>
+            </a>
+<a href="/ctrl-perf" class="portal-card" style="--card-accent: #6B3FA0">
+                <div class="card-icon">&#9881;</div>
+                <h3>控制器性能</h3>
+                <div class="card-desc">无线控制器 CPU、内存、AP 数、客户端数实时监控与历史趋势。</div>
+                <div class="card-meta">
+                    <div class="card-meta-item">控制器<b id="m-ctrl">--</b></div>
+                    <div class="card-meta-item">客户端<b id="m-sta">--</b></div>
+                </div>
+                <div class="card-arrow">&rarr;</div>
+            </a>
+        </div>
+
+        <div class="portal-footer">
+            无线网管平台 · 全自研 · Aruba AOS-8 + H3C Comware 7 · 15 分钟轮询
+        </div>
+    </div>
+
+    <script>
+        async function loadPortalStats() {
+            try {
+                const [statsResp, regionsResp, ctrlResp] = await Promise.all([
+                    fetch('/api/stats'),
+                    fetch('/api/regions'),
+                    fetch('/api/ctrl-metrics'),
+                ]);
+                const stats = await statsResp.json();
+                const regions = await regionsResp.json();
+                const ctrls = await ctrlResp.json();
+
+                // Hero stats
+                document.getElementById('h-total').textContent = stats.total;
+                document.getElementById('h-online').textContent = stats.online;
+                document.getElementById('h-offline').textContent = stats.offline;
+                const ctrlList = ctrls.controllers || [];
+                document.getElementById('h-ctrl').textContent = ctrlList.length;
+
+                // Card meta
+                const rate = stats.total > 0 ? ((stats.online / stats.total) * 100).toFixed(1) + '%' : '--';
+                document.getElementById('m-rate').textContent = rate;
+                document.getElementById('m-offline').textContent = stats.offline;
+                document.getElementById('m-regions').textContent = regions.length;
+                document.getElementById('m-total').textContent = stats.total;
+
+                // H3C vs Aruba
+                let h3cCount = 0, arubaCount = 0;
+                regions.forEach(r => {
+                    if (r.region === 'H3C-AC') h3cCount = r.total;
+                    else arubaCount += r.total;
+                });
+                document.getElementById('m-h3c').textContent = h3cCount;
+                document.getElementById('m-aruba').textContent = arubaCount;
+
+                // Controller meta
+                let totalSta = 0;
+                if (Array.isArray(ctrlList)) {
+                    ctrlList.forEach(c => { totalSta += (c.sta_count || 0); });
+                }
+                document.getElementById('m-ctrl').textContent = Array.isArray(ctrlList) ? ctrlList.length : '--';
+                document.getElementById('m-sta').textContent = totalSta;
+
+                // Home AP placeholder
+                document.getElementById('m-placed').textContent = '--';
+                document.getElementById('m-unplaced').textContent = '--';
+            } catch (err) {
+                console.error('[Portal] 加载失败:', err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPortalStats();
+            setInterval(loadPortalStats, 30000);
+        });
+    </script>
+</body>
+</html>

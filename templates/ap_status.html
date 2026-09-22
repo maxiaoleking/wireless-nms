@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>无线网管平台 - AP 区域状态</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260720">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="top-bar">
+        <div class="top-bar-left">
+            <h1 class="logo">
+                <span class="logo-icon">&#9678;</span>
+                无线网管平台
+            </h1>
+        </div>
+        <div class="top-bar-center">
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-label">总数</span>
+                    <span class="stat-value" id="stat-total">--</span>
+                </div>
+                <div class="stat-item online">
+                    <span class="stat-label">在线</span>
+                    <span class="stat-value" id="stat-online">--</span>
+                </div>
+                <div class="stat-item offline">
+                    <span class="stat-label">离线</span>
+                    <span class="stat-value" id="stat-offline">--</span>
+                </div>
+                <div class="stat-item rate">
+                    <span class="stat-label">离线率</span>
+                    <span class="stat-value" id="stat-offline-rate">--</span>
+                </div>
+            </div>
+        </div>
+        <div class="top-bar-right">
+            <span class="refresh-info" style="margin-right:12px">最后更新: <span id="last-update">--</span></span>
+            <div class="nav-links">
+                <a href="/" class="nav-link">入口</a>
+                <a href="/dashboard" class="nav-link">总览</a>
+                <a href="/ap-status" class="nav-link active">AP 状态</a>
+                <a href="/campus-ap" class="nav-link">室外点位</a>
+                <a href="/ctrl-perf" class="nav-link">控制器</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="main-container">
+        <!-- 左侧控制面板 -->
+        <aside class="control-panel">
+            <!-- 区域选择 -->
+            <div class="panel-section">
+                <h3 class="section-title">区域选择</h3>
+                <select id="region-select" class="region-select">
+                    <option value="">全部区域</option>
+                    {% for key, cfg in regions.items() %}
+                    <option value="{{ key }}">{{ cfg.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- 区域统计 -->
+            <div class="panel-section">
+                <h3 class="section-title">区域概览</h3>
+                <div id="region-stats" class="region-stats">
+                    <!-- 动态填充 -->
+                </div>
+            </div>
+
+            <!-- AP 搜索 -->
+            <div class="panel-section">
+                <h3 class="section-title">AP 搜索</h3>
+                <input type="text" id="ap-search" class="search-input"
+                       placeholder="输入 AP 名称 / MAC 搜索...">
+                <div id="search-results" class="search-results">
+                    <!-- 搜索结果 -->
+                </div>
+            </div>
+
+            <!-- 离线 AP 列表 -->
+            <div class="panel-section">
+                <h3 class="section-title">
+                    离线 AP
+                    <span id="offline-count" class="badge">0</span>
+                </h3>
+                <div id="offline-list" class="offline-list">
+                    <!-- 动态填充 -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间地图区域 -->
+        <div class="map-container">
+            <div id="map" class="map"></div>
+            <!-- AP 计数浮层 -->
+            <div class="map-overlay">
+                <span id="map-ap-count">0</span> 个 AP
+            </div>
+        </div>
+
+        <!-- 右侧 AP 详情面板 -->
+        <aside class="detail-panel" id="detail-panel">
+            <div class="detail-header">
+                <h3>AP 详情</h3>
+                <button class="close-btn" id="detail-close">&times;</button>
+            </div>
+            <div class="detail-content" id="detail-content">
+                <p class="detail-placeholder">点击地图上的 AP 查看详情</p>
+            </div>
+        </aside>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='js/ap-status.js') }}?v={{ range(1,99999)|random }}"></script>
+    <script>
+        // 传递配置到前端
+        window.REFRESH_INTERVAL = {{ refresh_interval }};
+        window.REGIONS = {{ regions | tojson }};
+    </script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>无线网管平台 - 总览</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260720">
+    <style>
+        .dashboard { padding: 20px; max-width: 1400px; margin: 0 auto; }
+        .dash-header { text-align: center; margin-bottom: 30px; }
+        .dash-header h2 { font-size: 24px; color: var(--text-primary); margin-bottom: 8px; }
+        .dash-header p { color: var(--text-muted); font-size: 14px; }
+        .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .dash-card {
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+        .dash-card h3 { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+        .dash-card .big-num { font-size: 42px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-primary); }
+        .dash-card .big-num.green { color: var(--color-online); }
+        .dash-card .big-num.red { color: var(--color-offline); }
+        .dash-card .big-num.gold { color: var(--text-secondary); }
+        .dash-card .big-num.blue { color: var(--text-primary); }
+        .dash-card .sub-text { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+        .region-table { width: 100%; border-collapse: collapse; }
+        .region-table th, .region-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border-subtle); font-size: 14px; }
+        .region-table th { color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .region-table td.num { font-variant-numeric: tabular-nums; }
+        .region-table tr:hover { background: rgba(255,255,255,0.3); cursor: pointer; }
+        .region-table .bar { height: 6px; border-radius: 3px; background: rgba(24,25,26,0.08); overflow: hidden; margin-top: 4px; }
+        .region-table .bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+        .bar-fill.online { background: var(--color-online); }
+        .bar-fill.offline { background: var(--color-offline); }
+        .dash-actions { display: flex; gap: 12px; justify-content: center; margin-top: 24px; }
+        .dash-btn {
+            padding: 10px 24px; border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(10px);
+            color: var(--text-primary); cursor: pointer; font-size: 14px;
+            transition: all 0.2s; text-decoration: none; display: inline-block;
+        }
+        .dash-btn:hover { background: rgba(255,255,255,0.9); border-color: var(--text-secondary); }
+        .dash-btn.primary {
+            background: rgba(24,25,26,0.85);
+            border-color: var(--text-primary);
+            color: #fff;
+        }
+        .dash-btn.primary:hover { background: rgba(24,25,26,0.95); }
+    </style>
+</head>
+<body>
+    <header class="top-bar">
+        <div class="top-bar-left">
+            <h1 class="logo"><span class="logo-icon">&#9678;</span> 无线网管平台</h1>
+        </div>
+        <div class="top-bar-right">
+            <div class="nav-links">
+                <a href="/" class="nav-link">入口</a>
+                <a href="/dashboard" class="nav-link active">总览</a>
+                <a href="/ap-status" class="nav-link">AP 状态</a>
+                <a href="/campus-ap" class="nav-link">室外点位</a>
+                <a href="/ctrl-perf" class="nav-link">控制器</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container" style="overflow-y:auto">
+        <div class="dashboard">
+            <div class="dash-header">
+                <h2>无线网络总览</h2>
+                <p id="dash-time">最后更新: --</p>
+            </div>
+
+            <div class="dash-grid" id="stats-cards">
+                <div class="dash-card">
+                    <h3>AP 总数</h3>
+                    <div class="big-num blue" id="d-total">--</div>
+                    <div class="sub-text">全网接入点</div>
+                </div>
+                <div class="dash-card">
+                    <h3>在线</h3>
+                    <div class="big-num green" id="d-online">--</div>
+                    <div class="sub-text">正常工作中</div>
+                </div>
+                <div class="dash-card">
+                    <h3>离线</h3>
+                    <div class="big-num red" id="d-offline">--</div>
+                    <div class="sub-text">需要关注</div>
+                </div>
+                <div class="dash-card">
+                    <h3>离线率</h3>
+                    <div class="big-num gold" id="d-rate">--</div>
+                    <div class="sub-text">健康指标</div>
+                </div>
+            </div>
+
+            <div class="dash-card" style="margin-bottom:24px">
+                <h3>各区域状态</h3>
+                <table class="region-table">
+                    <thead>
+                        <tr>
+                            <th>区域</th>
+                            <th>控制器</th>
+                            <th>总数</th>
+                            <th>在线</th>
+                            <th>离线</th>
+                            <th>在线率</th>
+                        </tr>
+                    </thead>
+                    <tbody id="region-tbody">
+                        <tr><td colspan="6" style="text-align:center;color:var(--text-muted)">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="dash-card" style="margin-bottom:24px">
+                <h3>离线 AP 列表</h3>
+                <div id="offline-summary" style="max-height:300px;overflow-y:auto">
+                    <p style="color:var(--text-muted);text-align:center;padding:20px">加载中...</p>
+                </div>
+            </div>
+
+            <div class="dash-actions">
+                <a href="/ap-status" class="dash-btn primary">AP 区域状态页 &rarr;</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadDashboard() {
+            try {
+                const [statsResp, regionsResp, offlineResp] = await Promise.all([
+                    fetch('/api/stats'),
+                    fetch('/api/regions'),
+                    fetch('/api/offline_aps'),
+                ]);
+                const stats = await statsResp.json();
+                const regions = await regionsResp.json();
+                const offline = await offlineResp.json();
+
+                // 统计卡片
+                document.getElementById('d-total').textContent = stats.total;
+                document.getElementById('d-online').textContent = stats.online;
+                document.getElementById('d-offline').textContent = stats.offline;
+                document.getElementById('d-rate').textContent = stats.offline_rate + '%';
+                document.getElementById('dash-time').textContent = '最后更新: ' + new Date().toLocaleTimeString('zh-CN', {hour12: false});
+
+                // 区域表格
+                const tbody = document.getElementById('region-tbody');
+                tbody.innerHTML = regions.map(r => {
+                    const onlineRate = r.total > 0 ? ((r.online / r.total) * 100).toFixed(1) : '0.0';
+                    return `<tr onclick="location.href='/ap-status?region=${r.region}'">
+                        <td><b>${r.name || r.region}</b></td>
+                        <td style="color:var(--text-muted)">${r.controller_ip || '--'}</td>
+                        <td class="num">${r.total}</td>
+                        <td class="num" style="color:var(--color-online)">${r.online}</td>
+                        <td class="num" style="color:var(--color-offline)">${r.offline}</td>
+                        <td class="num">
+                            ${onlineRate}%
+                            <div class="bar"><div class="bar-fill online" style="width:${onlineRate}%"></div></div>
+                        </td>
+                    </tr>`;
+                }).join('');
+
+                // 离线列表
+                const offlineDiv = document.getElementById('offline-summary');
+                if (offline.count === 0) {
+                    offlineDiv.innerHTML = '<p style="color:var(--color-online);text-align:center;padding:20px">全网 AP 均在线</p>';
+                } else {
+                    offlineDiv.innerHTML = offline.aps.map(ap =>
+                        `<div class="offline-item">
+                            <span class="offline-item-name">${ap.name}</span>
+                            <span class="offline-item-region">${ap.controller || ''}</span>
+                        </div>`
+                    ).join('');
+                }
+            } catch (err) {
+                console.error('[Dashboard] 加载失败:', err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+            setInterval(loadDashboard, 30000);
+        });
+    </script>
+</body>
+</html>

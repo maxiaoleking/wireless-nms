@@ -1,0 +1,652 @@
+/* ============================================================
+   全自研无线网管平台 - 全局样式
+   全景日落霓虹渐变主题 + 毛玻璃组件
+   ============================================================ */
+
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-gradient: linear-gradient(135deg, #A825E3 0%, #E62A6B 45%, #FF7637 80%, #FFC800 100%);
+    --text-primary: #18191A;
+    --text-secondary: #4E4F50;
+    --text-muted: #6B6C6D;
+    --accent: #FFFFFF;
+    --accent-dim: rgba(255, 255, 255, 0.7);
+    --bg-card: rgba(255, 255, 255, 0.75);
+    --bg-card-hover: rgba(255, 255, 255, 0.88);
+    --bg-card-solid: #f5f0f8;
+    --color-online: #002FA7;
+    --color-offline: #ef4444;
+    --color-warning: #c96b00;
+    --border-color: rgba(255, 255, 255, 0.45);
+    --border-subtle: rgba(255, 255, 255, 0.25);
+    --shadow: 0 4px 24px rgba(80, 20, 60, 0.12);
+    --shadow-lg: 0 8px 40px rgba(80, 20, 60, 0.18);
+    --radius: 12px;
+    --panel-width: 280px;
+    --detail-width: 320px;
+    --topbar-height: 56px;
+    --blur: 18px;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg-gradient);
+    background-attachment: fixed;
+    color: var(--text-primary);
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* ============================================================
+   顶部导航栏
+   ============================================================ */
+.top-bar {
+    height: var(--topbar-height);
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.top-bar-left {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logo-icon {
+    color: var(--text-primary);
+    font-size: 22px;
+}
+
+.top-bar-center {
+    display: flex;
+    align-items: center;
+}
+
+.stats-bar {
+    display: flex;
+    gap: 24px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-item.online .stat-value { color: var(--color-online); }
+.stat-item.offline .stat-value { color: var(--color-offline); }
+.stat-item.rate .stat-value { color: var(--text-secondary); }
+
+.top-bar-right {
+    display: flex;
+    align-items: center;
+}
+
+.refresh-info {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* ============================================================
+   主内容区 - 三栏布局
+   ============================================================ */
+.main-container {
+    display: flex;
+    height: calc(100vh - var(--topbar-height));
+    margin-top: var(--topbar-height);
+}
+
+/* ============================================================
+   左侧控制面板
+   ============================================================ */
+.control-panel {
+    width: var(--panel-width);
+    min-width: var(--panel-width);
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    border-right: 1px solid var(--border-color);
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.panel-section {
+    margin-bottom: 16px;
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: var(--radius);
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+}
+
+.section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.badge {
+    background: var(--color-offline);
+    color: white;
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+/* 区域选择 */
+.region-select {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.region-select:focus {
+    border-color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.85);
+}
+
+/* 区域统计 */
+.region-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.region-stat-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 13px;
+}
+
+.region-stat-item:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.region-stat-item.active {
+    background: rgba(255, 255, 255, 0.85);
+    border-left: 3px solid var(--text-primary);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.region-stat-name {
+    flex: 1;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.region-stat-count {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    gap: 8px;
+}
+
+.region-stat-count .online { color: var(--color-online); }
+.region-stat-count .offline { color: var(--color-offline); }
+
+/* 搜索 */
+.search-input {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.search-input::placeholder {
+    color: var(--text-muted);
+}
+
+.search-input:focus {
+    border-color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.85);
+}
+
+.search-results {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 8px;
+}
+
+.search-result-item {
+    padding: 6px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s;
+    color: var(--text-primary);
+}
+
+.search-result-item:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.search-result-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.search-result-dot.online { background: var(--color-online); }
+.search-result-dot.offline { background: var(--color-offline); }
+
+/* 离线列表 */
+.offline-list {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.offline-item {
+    padding: 6px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.2s;
+}
+
+.offline-item:hover {
+    background: rgba(212, 24, 58, 0.08);
+}
+
+.offline-item-name {
+    color: var(--text-primary);
+}
+
+.offline-item-region {
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+/* ============================================================
+   中间地图区域
+   ============================================================ */
+.map-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.map {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+}
+
+.map-overlay {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    background: var(--bg-card);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    padding: 8px 16px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    font-size: 13px;
+    color: var(--text-secondary);
+    z-index: 500;
+    box-shadow: var(--shadow);
+}
+
+.map-overlay span {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+/* AP 标记样式 */
+.ap-marker {
+    cursor: pointer;
+}
+
+.ap-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    transition: transform 0.2s;
+}
+
+.ap-dot:hover {
+    transform: scale(1.5);
+}
+
+.ap-dot.online {
+    background: var(--color-online);
+    box-shadow: 0 0 6px rgba(10, 143, 60, 0.4);
+}
+
+.ap-dot.offline {
+    background: var(--color-offline);
+    box-shadow: 0 0 6px rgba(212, 24, 58, 0.4);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.7; }
+}
+
+/* Leaflet popup 自定义样式 */
+.leaflet-popup-content-wrapper {
+    background: var(--bg-card) !important;
+    backdrop-filter: blur(var(--blur)) !important;
+    -webkit-backdrop-filter: blur(var(--blur)) !important;
+    color: var(--text-primary) !important;
+    border-radius: var(--radius) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+
+.leaflet-popup-tip {
+    background: rgba(255, 255, 255, 0.8) !important;
+}
+
+.leaflet-popup-content {
+    margin: 12px !important;
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+}
+
+.popup-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.popup-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.popup-row:last-child {
+    border-bottom: none;
+}
+
+.popup-label {
+    color: var(--text-muted);
+}
+
+.popup-value {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.popup-status {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.popup-status.online {
+    background: rgba(10, 143, 60, 0.12);
+    color: var(--color-online);
+}
+
+.popup-status.offline {
+    background: rgba(212, 24, 58, 0.12);
+    color: var(--color-offline);
+}
+
+/* Leaflet 控件适配 */
+.leaflet-control-zoom a {
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    backdrop-filter: blur(10px) !important;
+    border-color: var(--border-color) !important;
+}
+
+.leaflet-tooltip {
+    background: rgba(255, 255, 255, 0.9) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 6px !important;
+    box-shadow: var(--shadow) !important;
+    font-size: 12px !important;
+}
+
+.leaflet-tooltip::before {
+    border-top-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* ============================================================
+   右侧详情面板
+   ============================================================ */
+.detail-panel {
+    width: var(--detail-width);
+    min-width: var(--detail-width);
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    border-left: 1px solid var(--border-color);
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+}
+
+.detail-panel.hidden {
+    transform: translateX(100%);
+    width: 0;
+    min-width: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.detail-header h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 22px;
+    cursor: pointer;
+    padding: 0 4px;
+    transition: color 0.2s;
+}
+
+.close-btn:hover {
+    color: var(--text-primary);
+}
+
+.detail-content {
+    padding: 16px;
+}
+
+.detail-placeholder {
+    color: var(--text-muted);
+    font-size: 13px;
+    text-align: center;
+    padding: 40px 0;
+}
+
+.detail-section {
+    margin-bottom: 16px;
+}
+
+.detail-section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    font-size: 13px;
+}
+
+.detail-label {
+    color: var(--text-muted);
+}
+
+.detail-value {
+    color: var(--text-primary);
+    font-weight: 500;
+    text-align: right;
+    max-width: 60%;
+    word-break: break-all;
+}
+
+.radio-card {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 8px;
+}
+
+.radio-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.radio-type {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: rgba(24, 25, 26, 0.08);
+    color: var(--text-primary);
+}
+
+.radio-type.dot11a { background: rgba(24, 25, 26, 0.08); color: var(--text-primary); }
+.radio-type.dot11g { background: rgba(24, 25, 26, 0.06); color: var(--text-secondary); }
+
+/* ============================================================
+   滚动条
+   ============================================================ */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(24, 25, 26, 0.15);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(24, 25, 26, 0.25);
+}
+
+/* ============================================================
+   响应式
+   ============================================================ */
+@media (max-width: 1200px) {
+    :root {
+        --panel-width: 240px;
+        --detail-width: 280px;
+    }
+}
+
+@media (max-width: 900px) {
+    .control-panel {
+        display: none;
+    }
+    .detail-panel {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 600;
+        box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+    }
+}
